@@ -97,7 +97,8 @@ function getTGRating(uid) {
 function getRank(message) {
 
     let args = message.content.split(' ')
-    let output = ''
+    let output1 = ''
+    let output2 = ''
 
     username = args[1].toLowerCase()
 
@@ -109,8 +110,7 @@ function getRank(message) {
         var initializePromise = getTGRating(uid);
         initializePromise.then(function(result) {
             rating = result.split('\n')[1].split(',')[3];
-            output = username + ' Team Game Rating: ' + rating
-            console.log(output)
+            output1 = username + ' Team Game Rating: ' + rating
         }, function(err) {
             console.log(err);
         })
@@ -119,13 +119,13 @@ function getRank(message) {
         var initializePromise = get1v1Rating(uid);
         initializePromise.then(function(result) {
             rating = result.split('\n')[1].split(',')[3];
-            console.log(output + '\n' + username + ' 1v1 Rating: ' + rating)
-            message.channel.send(output + '\n' + username + ' 1v1 Rating: ' + rating)
+            output2 = username + ' 1v1 Rating: ' + rating
         }, function(err) {
             console.log(err);
         })
 
-
+        message.send(output1 + '\n' + output2)
+        console.log(output1 + '\n' + output2)
 
     }, function(err) {
         console.log(err);
