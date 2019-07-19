@@ -34,10 +34,10 @@ function handleGetRating(message){
     html = ''
     uid = ''
     userDetails = ''
-
+    
     var html=afterLoad('http://www.voobly.com/api/finduser/' + user + '?key=' + vtoken)
     uid = html.split('\n')[1].split(',')[0]
-    
+
     var html=afterLoad('https://www.voobly.com/api/ladder/10?key=' + vtoken + '&uid=' + uid)
     console.log(html)
     
