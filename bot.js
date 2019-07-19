@@ -94,33 +94,10 @@ function getTGRating(uid) {
     })
 }
 
-function getUsername(uid){
-    // Setting URL and headers for request
-    var options = {
-        url: 'https://www.voobly.com/api/ladder/131?key=' + vtoken +'&uid=' + uid,
-        headers: {
-            'User-Agent': 'request'
-        }
-    };
-    // Return new promise 
-    return new Promise(function(resolve, reject) {
-    	// Do async job
-        request.get(options, function(err, resp, body) {
-            if (err) {
-                reject(err);
-            } else {
-                resolve(body.split(',')[8]);
-            }
-        })
-    })
-}
-
 function getRank(message) {
 
     let args = message.content.split(' ')
     let output = ''
-    let found = true
-    let founduser = ''
 
     username = args[1].toLowerCase()
 
@@ -129,26 +106,8 @@ function getRank(message) {
 
         uid = result;
 
-        var initializePromise = getUsername(uid);
-        initializePromise.then(function(result) {
-            founduser = result.toLowerCase()
-            if (username !== founduser){
-                found = false
-                message.channel.send('User not found')
-            }
-        }, function(err) {
-            console.log(err);
-        })
-
-        if (!found) {
-            exit
-        }
-
         var initializePromise = getTGRating(uid);
         initializePromise.then(function(result) {
-            if (username !== founduser){
-                return
-            }
             rating = result.split('\n')[1].split(',')[3];
             output = username + ' Team Game Rating: ' + rating
             console.log(output)
@@ -159,9 +118,6 @@ function getRank(message) {
 
         var initializePromise = get1v1Rating(uid);
         initializePromise.then(function(result) {
-            if (username !== founduser){
-                return
-            }
             rating = result.split('\n')[1].split(',')[3];
             console.log(output + '\n' + username + ' 1v1 Rating: ' + rating)
             message.channel.send(output + '\n' + username + ' 1v1 Rating: ' + rating)
