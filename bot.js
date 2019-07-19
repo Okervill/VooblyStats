@@ -149,12 +149,9 @@ function getRank(message) {
             if (username !== founduser){
                 return
             }
-            if(result == "") {
-                message.channel.send(username + ' not found or no rated games have been played')
-                return
-            }
             rating = result.split('\n')[1].split(',')[3];
             output = username + ' Team Game Rating: ' + rating
+            console.log(output)
         }, function(err) {
             console.log(err);
         })
@@ -166,6 +163,7 @@ function getRank(message) {
                 return
             }
             rating = result.split('\n')[1].split(',')[3];
+            console.log(output + '\n' + username + ' 1v1 Rating: ' + rating)
             message.channel.send(output + '\n' + username + ' 1v1 Rating: ' + rating)
         }, function(err) {
             console.log(err);
