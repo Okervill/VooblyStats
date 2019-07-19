@@ -1,10 +1,6 @@
+const csv = require('csv-string')
 const Discord = require('discord.js')
-var request = require("request");
-
-var uid;
-var rating;
-
-var exists = false;
+const request = require('request')
 
 const dclient = new Discord.Client()
 
@@ -21,7 +17,9 @@ dclient.on('message', message => {
 
     switch(message.content.split(' ')[0]){
         case '!rank':
-            getRank(message)
+            if(message.content.split(' ').length == 2){
+                getInfo(message)
+            }
             break
         case '!info':
             displayInfo(message)
@@ -33,10 +31,50 @@ dclient.on('message', message => {
 
 dclient.login(dtoken).catch(err => console.log(err))
 
-function getUid(username) {
+function getInfo(message){
+
+    user = message.content.split(' ')[1]
+
+    var uid;
+    var rating1v1;
+    var ratingTG;
+
+    var initializePromiseUID = getUid(user)
+    initializePromiseUID.then(function(result) {
+        uid = result
+    })
+    .then(function(result){
+        var initializePromise1v1 = get1v1Rating(uid)
+        initializePromise1v1.then(function(result) {
+            rating1v1 = result
+            message.channel.send(user + ' 1v1: ' + rating1v1)
+        })
+        .catch(function(error){
+            console.log(error)
+            return
+        })
+    })
+    .then(function(result){
+        var initializePromiseTG = getTGRating(uid)
+        initializePromiseTG.then(function(result) {
+            ratingTG = result
+            message.channel.send(user + ' TG: ' + ratingTG)
+        })
+        .catch(function(error){
+            console.log(error)
+            return
+        })
+    })
+    .catch(function(error){
+        console.log(error)
+        return
+    })
+}
+
+function getUid(user){
     // Setting URL and headers for request
     var options = {
-        url: 'http://www.voobly.com/api/finduser/' + username + '?key=' + vtoken,
+        url: 'https://www.voobly.com/api/finduser/' + user + '?key=' + vtoken,
         headers: {
             'User-Agent': 'request'
         }
@@ -45,16 +83,22 @@ function getUid(username) {
     return new Promise(function(resolve, reject) {
     	// Do async job
         request.get(options, function(err, resp, body) {
-            if (err) {
-                reject(err);
+            data = csv.parse(body)
+            if(data.length !== 2 || data[1][0] == '' || data[1][1] == ''){
+                reject('Player not found or has no ranked games')
             } else {
-                    resolve(body.split('\n')[1].split(',')[0]);
+                for(i = 0; i< data[0].length; i++){
+                    if(data[0][i] === 'uid'){
+                        uid = data[1][i]
+                        resolve(uid);
+                    }
+                }
             }
         })
     })
 }
 
-function get1v1Rating(uid) {
+function get1v1Rating(uid){
     // Setting URL and headers for request
     var options = {
         url: 'https://www.voobly.com/api/ladder/131?key=' + vtoken + '&uid=' + uid,
@@ -66,16 +110,19 @@ function get1v1Rating(uid) {
     return new Promise(function(resolve, reject) {
     	// Do async job
         request.get(options, function(err, resp, body) {
-            if (err) {
-                reject(err);
-            } else {
-                resolve(body);
+            data = csv.parse(body)
+            for(i = 0; i< data[0].length; i++){
+                if(data[0][i] === 'rating'){
+                    rating = data[1][i]
+                    resolve(rating);
+                }
             }
+            reject(err);
         })
     })
 }
 
-function getTGRating(uid) {
+function getTGRating(uid){
     // Setting URL and headers for request
     var options = {
         url: 'https://www.voobly.com/api/ladder/132?key=' + vtoken + '&uid=' + uid,
@@ -87,97 +134,21 @@ function getTGRating(uid) {
     return new Promise(function(resolve, reject) {
     	// Do async job
         request.get(options, function(err, resp, body) {
-            if (err) {
-                reject(err);
-            } else {
-                resolve(body);
-            }
-        })
-    })
-}
-
-function userExists(name){
-    // Setting URL and headers for request
-    var options = {
-        url: 'https://www.voobly.com/api/finduser/' + name + '?key=' + vtoken,
-        headers: {
-            'User-Agent': 'request'
-        }
-    };
-    // Return new promise 
-    return new Promise(function(resolve, reject) {
-    	// Do async job
-        request.get(options, function(err, resp, body) {
-            if (err) {
-                reject(err);
-            } else {
-                if(body.length == 11) {
-                    exists = false
-                    console.log('set false')
-                } else {
-                    exists = true
-                    console.log('set true')
+            data = csv.parse(body)
+            for(i = 0; i< data[0].length; i++){
+                if(data[0][i] === 'rating'){
+                    rating = data[1][i]
+                    resolve(rating);
                 }
-                resolve(exists);
             }
+            reject(err);
         })
     })
 }
 
-function getRank(message) {
-
-    let args = message.content.split(' ')
-    let output1 = ''
-    let output2 = ''
-
-    username = args[1].toLowerCase()
-
-    var initializePromise = getUid(username);
-    initializePromise.then(function(result) {
-
-        var initializePromise = userExists(username);
-        initializePromise.then(function(result) {
-            if (!result) {
-                return
-            }
-        }, function(err) {
-            console.log(err);
-        })
-
-        uid = result;
-
-        var initializePromise = getTGRating(uid);
-        initializePromise.then(function(result) {
-            if (!exists) {
-                return
-            }
-            rating = result.split('\n')[1].split(',')[3];
-            output1 = username + ' Team Game Rating: ' + rating
-            message.channel.send(output1)
-            console.log(output1)
-        }, function(err) {
-            console.log(err);
-        })
-
-
-        var initializePromise = get1v1Rating(uid);
-        initializePromise.then(function(result) {
-            if (!exists) {
-                return
-            }
-            rating = result.split('\n')[1].split(',')[3];
-            output2 = username + ' 1v1 Rating: ' + rating
-            message.channel.send(output2)
-            console.log(output2)
-        }, function(err) {
-            console.log(err);
-        })
-
-    }, function(err) {
-        console.log(err);
-    })
-
-
+function buildOutput(user, rating1v1, ratingTG){
+    output = 'User: ' + user + '\n1v1: ' + rating1v1 + '\nTG: ' + ratingTG
+    console.log(output)
 }
 
 function displayInfo(message){

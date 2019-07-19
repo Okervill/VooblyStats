@@ -5,6 +5,8 @@
   "main": "bot.js",
   "dependencies": {
     "after-load": "^1.0.4",
+    "csv-parser": "^2.3.0",
+    "csv-string": "^3.1.6",
     "discord.js": "^11.5.1",
     "querystring": "^0.2.0",
     "request-promise": "^4.2.4"
