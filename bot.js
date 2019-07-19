@@ -113,6 +113,9 @@ function get1v1Rating(uid){
     return new Promise(function(resolve, reject) {
     	// Do async job
         request.get(options, function(err, resp, body) {
+            if(body == '' || body == null){
+                reject('No ranked games found')
+            }
             data = csv.parse(body)
             for(i = 0; i< data[0].length; i++){
                 if(data[0][i] === 'rating'){
@@ -137,6 +140,9 @@ function getTGRating(uid){
     return new Promise(function(resolve, reject) {
     	// Do async job
         request.get(options, function(err, resp, body) {
+            if(body == '' || body == null){
+                reject('No ranked games found')
+            }
             data = csv.parse(body)
             for(i = 0; i< data[0].length; i++){
                 if(data[0][i] === 'rating'){
