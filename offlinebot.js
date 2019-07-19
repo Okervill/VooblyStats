@@ -4,7 +4,7 @@ var request = require("request");
 var uid;
 var rating;
 
-var founduser;
+var exists = false;
 
 const dclient = new Discord.Client()
 
@@ -96,6 +96,34 @@ function getTGRating(uid) {
     })
 }
 
+function userExists(name){
+    // Setting URL and headers for request
+    var options = {
+        url: 'https://www.voobly.com/api/finduser/' + name + '?key=' + vtoken,
+        headers: {
+            'User-Agent': 'request'
+        }
+    };
+    // Return new promise 
+    return new Promise(function(resolve, reject) {
+    	// Do async job
+        request.get(options, function(err, resp, body) {
+            if (err) {
+                reject(err);
+            } else {
+                if(body.length == 11) {
+                    exists = false
+                    console.log('set false')
+                } else {
+                    exists = true
+                    console.log('set true')
+                }
+                resolve(exists);
+            }
+        })
+    })
+}
+
 function getRank(message) {
 
     let args = message.content.split(' ')
@@ -107,12 +135,26 @@ function getRank(message) {
     var initializePromise = getUid(username);
     initializePromise.then(function(result) {
 
+        var initializePromise = userExists(username);
+        initializePromise.then(function(result) {
+            if (!result) {
+                return
+            }
+        }, function(err) {
+            console.log(err);
+        })
+
         uid = result;
 
         var initializePromise = getTGRating(uid);
         initializePromise.then(function(result) {
+            if (!exists) {
+                return
+            }
             rating = result.split('\n')[1].split(',')[3];
             output1 = username + ' Team Game Rating: ' + rating
+            message.channel.send(output1)
+            console.log(output1)
         }, function(err) {
             console.log(err);
         })
@@ -120,14 +162,16 @@ function getRank(message) {
 
         var initializePromise = get1v1Rating(uid);
         initializePromise.then(function(result) {
+            if (!exists) {
+                return
+            }
             rating = result.split('\n')[1].split(',')[3];
             output2 = username + ' 1v1 Rating: ' + rating
+            message.channel.send(output2)
+            console.log(output2)
         }, function(err) {
             console.log(err);
         })
-
-        message.send(output1 + '\n' + output2)
-        console.log(output1 + '\n' + output2)
 
     }, function(err) {
         console.log(err);
