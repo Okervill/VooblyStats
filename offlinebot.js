@@ -18,7 +18,7 @@ dclient.on('message', message => {
 
     switch(message.content.split(' ')[0]){
         case '!rank':
-            handleGetRating(message)
+            console.log(handleGetRating(message))
             break
         default:
             break
@@ -32,13 +32,17 @@ function handleGetRating(message){
     user = args[1]
 
     html = ''
-    uid = ''
     userDetails = ''
-    
-    var html=afterLoad('http://www.voobly.com/api/finduser/' + user + '?key=' + vtoken)
-    uid = html.split('\n')[1].split(',')[0]
+    uidquery = 'http://www.voobly.com/api/finduser/' + user + '?key=' + vtoken
 
-    var html=afterLoad('https://www.voobly.com/api/ladder/10?key=' + vtoken + '&uid=' + uid)
-    console.log(html)
+    var p = new Promise((resolve, reject) => {
+        var html=afterLoad(uidquery)
+        uid = html.split('\n')[1].split(',')[0]
+        resolve(uid)
+    })
+
+    p.then(function(value) {
+        return afterLoad('https://www.voobly.com/api/ladder/10?key=' + vtoken + '&uid=' + value)
+    })
     
 }
