@@ -47,9 +47,8 @@ function getInfo(message){
     })
     .then(function(result){
         var initializePromise1v1 = get1v1Rating(uid)
-        initializePromise1v1.then(function(result) {
+        return initializePromise1v1.then(function(result) {
             rating1v1 = result
-            message.channel.send(user + ' 1v1: ' + rating1v1)
         })
         .catch(function(error){
             message.channel.send(error)
@@ -59,15 +58,18 @@ function getInfo(message){
     })
     .then(function(result){
         var initializePromiseTG = getTGRating(uid)
-        initializePromiseTG.then(function(result) {
+        return initializePromiseTG.then(function(result) {
             ratingTG = result
-            message.channel.send(user + ' TG: ' + ratingTG)
         })
         .catch(function(error){
             message.channel.send(error)
             console.log(error)
             return
         })
+    })
+    .then(() => {
+        message.channel.send(buildOutput(user, rating1v1, ratingTG))
+        return Promise.resolve()
     })
     .catch(function(error){
         message.channel.send(error)
