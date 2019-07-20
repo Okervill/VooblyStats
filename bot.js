@@ -121,8 +121,8 @@ function get1v1Rating(uid){
             data = csv.parse(body)
             for(i = 0; i< data[0].length; i++){
                 if(data[0][i] === 'rating'){
-                    rating = data[1][i]
-                    resolve(rating);
+                    output = '1v1: ' + data[1][i] + ' (' + (parseInt(data[1][i+1]) + parseInt(data[1][i+2])) + ')'
+                    resolve(output);
                 }
             }
             reject(err);
@@ -148,8 +148,8 @@ function getTGRating(uid){
             data = csv.parse(body)
             for(i = 0; i< data[0].length; i++){
                 if(data[0][i] === 'rating'){
-                    rating = data[1][i]
-                    resolve(rating);
+                    output = 'TG: ' + data[1][i] + ' (' + (parseInt(data[1][i+1]) + parseInt(data[1][i+2])) + ')'
+                    resolve(output);
                 }
             }
             reject(err);
@@ -158,8 +158,9 @@ function getTGRating(uid){
 }
 
 function buildOutput(user, rating1v1, ratingTG){
-    output = 'User: ' + user + '\n1v1: ' + rating1v1 + '\nTG: ' + ratingTG
+    output = 'User: ' + user + '\n' + rating1v1 + '\n' + ratingTG
     console.log(output)
+    return output
 }
 
 function displayInfo(message){
