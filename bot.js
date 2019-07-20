@@ -50,8 +50,8 @@ function getInfo(message){
             message.channel.send(user + ' 1v1: ' + rating1v1)
         })
         .catch(function(error){
+            message.channel.send(error)
             console.log(error)
-            reject('No ranked games found')
             return
         })
     })
@@ -62,8 +62,8 @@ function getInfo(message){
             message.channel.send(user + ' TG: ' + ratingTG)
         })
         .catch(function(error){
+            message.channel.send(error)
             console.log(error)
-            reject('No ranked games found')
             return
         })
     })
@@ -114,7 +114,7 @@ function get1v1Rating(uid){
     	// Do async job
         request.get(options, function(err, resp, body) {
             if(body == '' || body == null){
-                reject('No ranked games found')
+                reject('No ranked 1v1 games found')
             }
             data = csv.parse(body)
             for(i = 0; i< data[0].length; i++){
@@ -141,7 +141,7 @@ function getTGRating(uid){
     	// Do async job
         request.get(options, function(err, resp, body) {
             if(body == '' || body == null){
-                reject('No ranked games found')
+                reject('No ranked team games found')
             }
             data = csv.parse(body)
             for(i = 0; i< data[0].length; i++){
