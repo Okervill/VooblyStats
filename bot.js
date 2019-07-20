@@ -20,7 +20,14 @@ dclient.on('message', message => {
             if(message.content.split(' ').length == 2){
                 getInfo(message)
             } else if(message.content.split(' ').length > 2) {
-                message.reply('Invalid Syntax, correct usage: !rank <username>')
+                message.reply('Invalid Syntax, correct usage: !rank <user>')
+            }
+            break
+        case '!comp':
+            if(message.content.split(' ').length == 3){
+                comparePlayers(message)
+            } else if(message.content.split(' ').length !== 3) {
+                message.reply('Invalid Syntax, correct usage: !comp <user1> <user2>')
             }
             break
         case '!info':
@@ -32,6 +39,91 @@ dclient.on('message', message => {
 })
 
 dclient.login(dtoken).catch(err => console.log(err))
+
+function comparePlayers(message){
+    args = message.content.split(' ')
+    player1 = args[1]
+    player2 = args[2]
+
+    var uid1;
+    var uid2;
+
+    var rating1v11;
+    var rating1v12;
+
+    var ratingTG1;
+    var ratingTG2;
+
+    var initializePromiseUID1 = getUid(player1)
+    initializePromiseUID1.then(function(result) {
+        uid1 = result
+    })
+    .then(function(result){
+        var initializePromiseUID2 = getUid(player2)
+        return initializePromiseUID2.then(function(result) {
+            uid2 = result
+        })
+    })
+    .then(function(result){
+        var initializePromise1v11 = get1v1Rating(uid1)
+        return initializePromise1v11.then(function(result) {
+            rating1v11 = result
+        })
+        .catch(function(error){
+            message.channel.send(error)
+            console.log(error)
+            return
+        })
+    })
+    .then(function(result){
+        var initializePromise1v12 = get1v1Rating(uid2)
+        return initializePromise1v12.then(function(result) {
+            rating1v12 = result
+        })
+        .catch(function(error){
+            message.channel.send(error)
+            console.log(error)
+            return
+        })
+    })
+    .then(function(result){
+        var initializePromiseTG1 = getTGRating(uid1)
+        return initializePromiseTG1.then(function(result) {
+            ratingTG1 = result
+        })
+        .catch(function(error){
+            message.channel.send(error)
+            console.log(error)
+            return
+        })
+    })
+    .then(function(result){
+        var initializePromiseTG2 = getTGRating(uid2)
+        return initializePromiseTG2.then(function(result) {
+            ratingTG2 = result
+        })
+        .catch(function(error){
+            message.channel.send(error)
+            console.log(error)
+            return
+        })
+    })
+    .then(() => {
+        message.channel.send(buildCompareOutput(rating1v11, rating1v12, ratingTG1, ratingTG2))
+        return Promise.resolve()
+    })
+    .catch(function(error){
+        message.channel.send(error)
+        console.log(error)
+        return
+    })
+}
+
+function buildCompareOutput(rating1v11, rating1v12, ratingTG1, ratingTG2){
+    output = player1 + '  |  ' + player2 + '\n1v1: ' + rating1v11 + '  |  ' + rating1v12 + '\nTG: ' + ratingTG1 + '  |  ' + ratingTG2
+    console.log(output)
+    return output
+}
 
 function getInfo(message){
 
@@ -92,7 +184,7 @@ function getUid(user){
         request.get(options, function(err, resp, body) {
             data = csv.parse(body)
             if(data.length !== 2 || data[1][0] == '' || data[1][1] == ''){
-                reject('Player not found')
+                reject('Player ' + user + ' not found')
             } else {
                 for(i = 0; i< data[0].length; i++){
                     if(data[0][i] === 'uid'){
@@ -123,7 +215,7 @@ function get1v1Rating(uid){
             data = csv.parse(body)
             for(i = 0; i< data[0].length; i++){
                 if(data[0][i] === 'rating'){
-                    output = '1v1: ' + data[1][i] + ' (' + (parseInt(data[1][i+1]) + parseInt(data[1][i+2])) + ')'
+                    output = data[1][i] + ' (' + (parseInt(data[1][i+1]) + parseInt(data[1][i+2])) + ')'
                     resolve(output);
                 }
             }
@@ -150,7 +242,7 @@ function getTGRating(uid){
             data = csv.parse(body)
             for(i = 0; i< data[0].length; i++){
                 if(data[0][i] === 'rating'){
-                    output = 'TG: ' + data[1][i] + ' (' + (parseInt(data[1][i+1]) + parseInt(data[1][i+2])) + ')'
+                    output = data[1][i] + ' (' + (parseInt(data[1][i+1]) + parseInt(data[1][i+2])) + ')'
                     resolve(output);
                 }
             }
@@ -160,12 +252,12 @@ function getTGRating(uid){
 }
 
 function buildOutput(user, rating1v1, ratingTG){
-    output = 'User: ' + user + '\n' + rating1v1 + '\n' + ratingTG
+    output = user + '\n' + '1v1: ' + rating1v1 + '\n' + 'TG: ' + ratingTG
     console.log(output)
     return output
 }
 
 function displayInfo(message){
-    output = 'Name: VooblyStats\n Owner: Okkervill\n Usage: !rank <username> gets 1v1 and TG ratings from voobly for a given user'
+    output = 'Name: VooblyStats\nOwner: Okkervill\nUsage:\n   !rank <username> gets 1v1 and TG ratings for a given user\n   !comp <user1> <user2> compare ratings of two given players'
     message.channel.send(output)
 }
