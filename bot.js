@@ -50,8 +50,8 @@ function getInfo(message){
             message.channel.send(user + ' 1v1: ' + rating1v1)
         })
         .catch(function(error){
-            message.channel.send(error)
             console.log(error)
+            reject('No ranked games found')
             return
         })
     })
@@ -62,8 +62,8 @@ function getInfo(message){
             message.channel.send(user + ' TG: ' + ratingTG)
         })
         .catch(function(error){
-            message.channel.send(error)
             console.log(error)
+            reject('No ranked games found')
             return
         })
     })
