@@ -41,6 +41,9 @@ dclient.on('message', message => {
 dclient.login(dtoken).catch(err => console.log(err))
 
 function comparePlayers(message){
+    
+    message.channel.startTyping()
+
     args = message.content.split(' ')
     player1 = args[1]
     player2 = args[2]
@@ -109,6 +112,7 @@ function comparePlayers(message){
         })
     })
     .then(() => {
+        message.channel.stopTyping()
         message.channel.send(buildCompareOutput(rating1v11, rating1v12, ratingTG1, ratingTG2))
         return Promise.resolve()
     })
@@ -126,6 +130,8 @@ function buildCompareOutput(rating1v11, rating1v12, ratingTG1, ratingTG2){
 }
 
 function getInfo(message){
+
+    message.channel.startTyping()
 
     user = message.content.split(' ')[1]
 
@@ -160,6 +166,7 @@ function getInfo(message){
         })
     })
     .then(() => {
+        message.channel.stopTyping()
         message.channel.send(buildOutput(user, rating1v1, ratingTG))
         return Promise.resolve()
     })
