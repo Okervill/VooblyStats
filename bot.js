@@ -19,6 +19,8 @@ dclient.on('message', message => {
         case '!rank':
             if(message.content.split(' ').length == 2){
                 getInfo(message)
+            } else if(message.content.split(' ').length > 2) {
+                message.reply('Invalid Syntax, correct usage: !rank <username>')
             }
             break
         case '!info':
@@ -88,7 +90,7 @@ function getUid(user){
         request.get(options, function(err, resp, body) {
             data = csv.parse(body)
             if(data.length !== 2 || data[1][0] == '' || data[1][1] == ''){
-                reject('Player not found or has no ranked games')
+                reject('Player not found')
             } else {
                 for(i = 0; i< data[0].length; i++){
                     if(data[0][i] === 'uid'){
