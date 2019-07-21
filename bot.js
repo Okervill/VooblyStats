@@ -291,11 +291,6 @@ function getSteamInfo(message) {
                 rmgames = result[3]
                 steamoutput = user + '\n' + 'RM: ' + rmrating + ' (' + rmgames + ')' + '\nDM: ' + dmrating + ' (' + dmgames + ')'
             })
-                .catch(function (error) {
-                    message.channel.send(error)
-                    console.log(error)
-                    return
-                })
         })
         .then(() => {
             message.channel.send(steamoutput)
