@@ -402,7 +402,7 @@ function getHDStats(steamid) {
         // Do async job
         request.get(options, function (err, resp, body) {
             if (body.includes('Internal Server Error')) {
-                reject('No steam information: ' + err)
+                reject('No steam information found')
                 return
             }
             data = JSON.parse(body)
@@ -435,10 +435,10 @@ function buildOutput(user, rating1v1, ratingTG) {
 function displayInfo(message) {
     output = 'Name: VooblyStats\n' + 
             'Owner: Okkervill\n' + 
-            'Usage:\n' + 
-            '!vrank < username > gets Voobly ratings for a given user\n' + 
-            '!srank < username > gets Steam ratings for a given users Steam Vanity URL. This requires a public profile\n' +
-            '!srankid < profileID > gets Steam ratings for a given users Steam Profile ID. This requires a public profile\n' +
+            'Usage:\n   ' + 
+            '!vrank < username > gets Voobly ratings for a given user\n   ' + 
+            '!srank < username > gets Steam ratings for a given users Steam Vanity URL. This requires a public profile\n   ' +
+            '!srankid < profileID > gets Steam ratings for a given users Steam Profile ID. This requires a public profile\n   ' +
             '!comp <user1> <user2> compare Voobly ratings of two given players'
     message.channel.send(output)
 }
