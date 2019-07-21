@@ -4,9 +4,9 @@ const request = require('request')
 
 const dclient = new Discord.Client()
 
-const vtoken = 'y58rt04okmw2xjpvncpaoi2wp6jnnduj'
-const dtoken = 'NjAxNTkxNTA1MTI3MzQyMDgx.XTEhxA.G03B5EXPajsxLAcn6eYDTkSikN0'
-const stoken = '52154F819CCC15824124A611C5970721'
+const vtoken = process.env.vtoken
+const dtoken = process.env.dtoken
+const stoken = process.env.stoken
 
 dclient.on('ready', () => {
     console.log(`Logged in as ${dclient.user.tag}!`);
@@ -17,9 +17,23 @@ dclient.on('message', message => {
     if (message.author.bot) return
 
     switch (message.content.split(' ')[0]) {
-        case '!rank':
+        case '!vrank':
             if (message.content.split(' ').length == 2) {
-                getInfo(message)
+                getVooblyInfo(message)
+            } else if (message.content.split(' ').length > 2) {
+                message.reply('Invalid Syntax, correct usage: !rank <user>')
+            }
+            break
+        case '!srank':
+            if (message.content.split(' ').length == 2) {
+                getSteamInfo(message)
+            } else if (message.content.split(' ').length > 2) {
+                message.reply('Invalid Syntax, correct usage: !rank <user>')
+            }
+            break
+        case '!srankid':
+            if (message.content.split(' ').length == 2) {
+                getSteamInfoID(message)
             } else if (message.content.split(' ').length > 2) {
                 message.reply('Invalid Syntax, correct usage: !rank <user>')
             }
@@ -127,20 +141,13 @@ function buildCompareOutput(rating1v11, rating1v12, ratingTG1, ratingTG2) {
     return output
 }
 
-function getInfo(message) {
+function getVooblyInfo(message) {
 
     user = message.content.split(' ')[1]
 
     var uid;
     var rating1v1;
     var ratingTG;
-
-    var steamid;
-    var rmgames;
-    var dmgames;
-    var rmrating;
-    var dmrating;
-    var steamoutput;
 
     var initializePromiseUID = getUid(user)
     initializePromiseUID.then(function (result) {
@@ -149,7 +156,6 @@ function getInfo(message) {
         .then(function (result) {
             var initializePromise1v1 = get1v1Rating(uid)
             return initializePromise1v1.then(function (result) {
-                console.log(result)
                 rating1v1 = result
             })
                 .catch(function (error) {
@@ -161,7 +167,6 @@ function getInfo(message) {
         .then(function (result) {
             var initializePromiseTG = getTGRating(uid)
             return initializePromiseTG.then(function (result) {
-                console.log(result)
                 ratingTG = result
             })
                 .catch(function (error) {
@@ -170,35 +175,8 @@ function getInfo(message) {
                     return
                 })
         })
-        .then(function (result) {
-            var initializePromiseSteam = userExistsSteam(user)
-            return initializePromiseSteam.then(function (result) {
-                steamid = result
-            })
-                .catch(function (error) {
-                    message.channel.send(error)
-                    console.log(error)
-                    return
-                })
-        })
-        .then(function (result) {
-            var initializePromiseSteamStats = getHDStats(steamid)
-            return initializePromiseSteamStats.then(function (result) {
-                dmrating = result[0]
-                rmrating = result[1]
-                dmgames = result[2]
-                rmgames = result[3]
-                steamoutput = user + '\n' + 'RM: ' + rmrating + ' (' + rmgames + ')' + '\nDM: ' + dmrating + ' (' + dmgames + ')'
-            })
-            .catch(function (error) {
-                message.channel.send(error)
-                console.log(error)
-                return
-            })
-        })
         .then(() => {
             message.channel.send(buildOutput(user, rating1v1, ratingTG))
-            message.channel.send(steamoutput)
             return Promise.resolve()
         })
         .catch(function (error) {
@@ -289,9 +267,116 @@ function getTGRating(uid) {
     })
 }
 
+function getSteamInfo(message) {
+
+    var steamid;
+    var rmgames;
+    var dmgames;
+    var rmrating;
+    var dmrating;
+    var steamoutput;
+
+    user = message.content.split(' ')[1]
+
+    var initializePromiseSteam = userExistsSteam(user)
+    initializePromiseSteam.then(function (result) {
+        steamid = result
+    })
+        .then(function (result) {
+            var initializePromiseSteamStats = getHDStats(steamid)
+            return initializePromiseSteamStats.then(function (result) {
+                dmrating = result[0]
+                rmrating = result[1]
+                dmgames = result[2]
+                rmgames = result[3]
+                steamoutput = user + '\n' + 'RM: ' + rmrating + ' (' + rmgames + ')' + '\nDM: ' + dmrating + ' (' + dmgames + ')'
+            })
+                .catch(function (error) {
+                    message.channel.send(error)
+                    console.log(error)
+                    return
+                })
+        })
+        .then(() => {
+            message.channel.send(steamoutput)
+            console.log(steamoutput)
+        })
+        .catch(function (error) {
+            message.channel.send(error)
+            console.log(error)
+            return
+        })
+}
+function getSteamInfoID(message) {
+    var rmgames;
+    var dmgames;
+    var rmrating;
+    var dmrating;
+    var steamoutput;
+
+    steamid = message.content.split(' ')[1]
+
+    var initializePromiseSteam = userExistsSteamID(steamid)
+    initializePromiseSteam.then(function (result) {
+        user = result
+        console.log(user)
+    })
+        .then(function (result) {
+            var initializePromiseSteamStats = getHDStats(steamid)
+            return initializePromiseSteamStats.then(function (result) {
+                dmrating = result[0]
+                rmrating = result[1]
+                dmgames = result[2]
+                rmgames = result[3]
+                steamoutput = user + '\n' + 'RM: ' + rmrating + ' (' + rmgames + ')' + '\nDM: ' + dmrating + ' (' + dmgames + ')'
+            })
+                .catch(function (error) {
+                    message.channel.send(error)
+                    console.log(error)
+                    return
+                })
+        })
+        .catch(function (error) {
+            message.channel.send(error)
+            console.log(error)
+            return
+        })
+        .then(() => {
+            message.channel.send(steamoutput)
+            console.log(steamoutput)
+            return Promise.resolve()
+        })
+        .catch(function (error) {
+            message.channel.send(error)
+            console.log(error)
+            return
+        })
+}
+
+function userExistsSteamID(id) {
+    var options = {
+        url: 'https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/?key=' + stoken + '&format=json&steamids=' + id,
+        headers: {
+            'User-Agent': 'request'
+        }
+    }
+    return new Promise(function (resolve, reject) {
+        // Do async job
+        request.get(options, function (err, resp, body) {
+            data = JSON.parse(body)
+            if (data.response.length < 5) {
+                console.log('Unable to locate player on steam')
+                reject('Unable to locate player on steam')
+                return
+            }
+            resolve(data.response.players[0].personaname)
+        })
+    })
+}
+
 function userExistsSteam(username) {
     var options = {
-        url: 'http://api.steampowered.com/ISteamUser/ResolveVanityURL/v0001/?key=52154F819CCC15824124A611C5970721&vanityurl=' + username,
+        url: 'http://api.steampowered.com/ISteamUser/ResolveVanityURL/v0001/?key=' + stoken + '&vanityurl=' + username,
         headers: {
             'User-Agent': 'request'
         }
@@ -313,7 +398,7 @@ function userExistsSteam(username) {
 function getHDStats(steamid) {
     var output = [];
     var options = {
-        url: 'http://api.steampowered.com/ISteamUserStats/GetUserStatsForGame/v0002/?appid=221380&key=52154F819CCC15824124A611C5970721&steamid=' + steamid + '&format=json',
+        url: 'http://api.steampowered.com/ISteamUserStats/GetUserStatsForGame/v0002/?appid=221380&key=' + stoken + '&steamid=' + steamid + '&format=json',
         headers: {
             'User-Agent': 'request'
         }
@@ -322,7 +407,7 @@ function getHDStats(steamid) {
         // Do async job
         request.get(options, function (err, resp, body) {
             if (body.includes('Internal Server Error')) {
-                reject('No steam information')
+                reject('No steam information: ' + err)
                 return
             }
             data = JSON.parse(body)
@@ -353,6 +438,12 @@ function buildOutput(user, rating1v1, ratingTG) {
 }
 
 function displayInfo(message) {
-    output = 'Name: VooblyStats\nOwner: Okkervill\nUsage:\n   !rank <username> gets 1v1 and TG ratings for a given user\n   !comp <user1> <user2> compare ratings of two given players'
+    output = 'Name: VooblyStats\n' + 
+            'Owner: Okkervill\n' + 
+            'Usage:\n' + 
+            '!vrank < username > gets Voobly ratings for a given user\n' + 
+            '!srank < username > gets Steam ratings for a given users Steam Vanity URL. This requires a public profile\n' +
+            '!srankid < profileID > gets Steam ratings for a given users Steam Profile ID. This requires a public profile\n' +
+            '!comp <user1> <user2> compare Voobly ratings of two given players'
     message.channel.send(output)
 }
