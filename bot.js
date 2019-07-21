@@ -396,7 +396,7 @@ function getHDStats(steamid) {
     return new Promise(function (resolve, reject) {
         // Do async job
         request.get(options, function (err, resp, body) {
-            if (body.includes('Internal Server Error')) {
+            if (body.includes('Internal Server Error') || body == '{}') {
                 reject('No steam information found')
                 return
             }
