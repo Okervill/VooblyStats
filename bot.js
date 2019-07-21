@@ -56,8 +56,6 @@ dclient.on('message', message => {
             displayInfo(message)
             break
         default:
-            message.channel.send('Unknown command')
-            displayInfo(message)
             break
     }
 })
