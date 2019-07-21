@@ -38,6 +38,13 @@ dclient.on('message', message => {
                 message.reply('Invalid Syntax, correct usage: !steamid <user>')
             }
             break
+        case '!online':
+            if (message.content.split(' ').length == 1) {
+                getOnlinePlayers(message)
+            } else if (message.content.split(' ').length !== 1) {
+                message.reply('Invalid Syntax, correct usage: !online')
+            }
+            break
         case '!compare':
             if (message.content.split(' ').length == 3) {
                 comparePlayers(message)
@@ -423,21 +430,65 @@ function getHDStats(steamid) {
     })
 }
 
-function buildOutput(user, rating1v1, ratingTG) {
-    output = user + '\n' + '1v1: ' + rating1v1 + '\n' + 'TG: ' + ratingTG
-    console.log(output)
-    return output
+function getOnlinePlayers(message) {
+    var getTeam = getTeamDetails()
+    getTeam.then(function (result) {
+        message.channel.send(result)
+    })
 }
 
-function displayInfo(message) {
-    output = 'Name: VooblyStats\n' +
-        'Owner: Okkervill\n' +
-        'Usage:\n   ' +
-        '!voobly <username> gets Voobly ratings for a given user\n   ' +
-        '!steam <username> gets Steam ratings for a given users Steam Vanity URL.\n   ' +
-        '!steamid <profileID> gets Steam ratings for a given users Steam Profile ID.\n   ' +
-        '!compare <user1> <user2> compare Voobly ratings of two given players\n\n' +
-        'To get any information from steam users need to have your Profile and Game Details set to public\n' +
-        'Profile > Edit Profile > My Privacy Settings > "My Profile: Public" > "Game Details: Public"'
-    message.channel.send(output)
-}
+function getTeam() {
+    {
+        // Setting URL and headers for request
+
+        onlineUsers = []
+
+        var options = {
+            url: 'https://anvil.voobly.com',
+            headers: {
+                'User-Agent': 'request'
+            }
+        };
+        // Return new promise 
+        return new Promise(function (resolve, reject) {
+            // Do async job
+            request.get(options, function (err, resp, body) {
+                if (err) {
+                    console.log(err)
+                    return
+                }
+                body = body.split('<a href="https://voobly.com/profile/view/')
+                body.shift()
+                body.shift()
+                body.shift()
+                for (i = 0; i < body.length; i++) {
+                    username = body[i].split('\n')[0].substring(body[i].split('\n')[0].indexOf('>') + 1, body[i].split('\n')[0].indexOf('<'))
+                    if (body[i].split('\n')[3].includes('Online now')) {
+                        online = true
+                        onlineUsers.push(username)
+                    }
+                }
+                resolve(onlineUsers)
+            })
+        })
+    }
+
+    function buildOutput(user, rating1v1, ratingTG) {
+        output = user + '\n' + '1v1: ' + rating1v1 + '\n' + 'TG: ' + ratingTG
+        console.log(output)
+        return output
+    }
+
+    function displayInfo(message) {
+        output = 'Name: VooblyStats\n' +
+            'Owner: Okkervill\n' +
+            'Usage:\n   ' +
+            '!voobly <username> gets Voobly ratings for a given user\n   ' +
+            '!steam <username> gets Steam ratings for a given users Steam Vanity URL.\n   ' +
+            '!steamid <profileID> gets Steam ratings for a given users Steam Profile ID.\n   ' +
+            '!compare <user1> <user2> compare Voobly ratings of two given players\n   ' +
+            '!online get online users from Anvil Clan\n\n' +
+            'To get any information from steam users need to have your Profile and Game Details set to public\n' +
+            'Profile > Edit Profile > My Privacy Settings > "My Profile: Public" > "Game Details: Public"'
+        message.channel.send(output)
+    }
