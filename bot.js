@@ -324,22 +324,17 @@ function getSteamInfoID(message) {
         .then(function (result) {
             var initializePromiseSteamStats = getHDStats(steamid)
             return initializePromiseSteamStats.then(function (result) {
+                if(result.length < 3){
+                    console.log('No steam information found')
+                    return
+                }
+
                 dmrating = result[0]
                 rmrating = result[1]
                 dmgames = result[2]
                 rmgames = result[3]
                 steamoutput = user + '\n' + 'RM: ' + rmrating + ' (' + rmgames + ')' + '\nDM: ' + dmrating + ' (' + dmgames + ')'
             })
-                .catch(function (error) {
-                    message.channel.send(error)
-                    console.log(error)
-                    return
-                })
-        })
-        .catch(function (error) {
-            message.channel.send(error)
-            console.log(error)
-            return
         })
         .then(() => {
             message.channel.send(steamoutput)
