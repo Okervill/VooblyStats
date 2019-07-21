@@ -17,38 +17,40 @@ dclient.on('message', message => {
     if (message.author.bot) return
 
     switch (message.content.split(' ')[0]) {
-        case '!vrank':
+        case '!voobly':
             if (message.content.split(' ').length == 2) {
                 getVooblyInfo(message)
             } else if (message.content.split(' ').length > 2) {
-                message.reply('Invalid Syntax, correct usage: !rank <user>')
+                message.reply('Invalid Syntax, correct usage: !voobly <user>')
             }
             break
-        case '!srank':
+        case '!steam':
             if (message.content.split(' ').length == 2) {
                 getSteamInfo(message)
             } else if (message.content.split(' ').length > 2) {
-                message.reply('Invalid Syntax, correct usage: !rank <user>')
+                message.reply('Invalid Syntax, correct usage: !steam <user>')
             }
             break
-        case '!srankid':
+        case '!steamid':
             if (message.content.split(' ').length == 2) {
                 getSteamInfoID(message)
             } else if (message.content.split(' ').length > 2) {
-                message.reply('Invalid Syntax, correct usage: !rank <user>')
+                message.reply('Invalid Syntax, correct usage: !steamid <user>')
             }
             break
-        case '!comp':
+        case '!compare':
             if (message.content.split(' ').length == 3) {
                 comparePlayers(message)
             } else if (message.content.split(' ').length !== 3) {
-                message.reply('Invalid Syntax, correct usage: !comp <user1> <user2>')
+                message.reply('Invalid Syntax, correct usage: !compare <user1> <user2>')
             }
             break
         case '!info':
             displayInfo(message)
             break
         default:
+            message.channel.send('Unknown command')
+            displayInfo(message)
             break
     }
 })
@@ -319,7 +321,7 @@ function getSteamInfoID(message) {
         .then(function (result) {
             var initializePromiseSteamStats = getHDStats(steamid)
             return initializePromiseSteamStats.then(function (result) {
-                if(result.length < 3){
+                if (result.length < 3) {
                     console.log('No steam information found')
                     return
                 }
@@ -428,12 +430,14 @@ function buildOutput(user, rating1v1, ratingTG) {
 }
 
 function displayInfo(message) {
-    output = 'Name: VooblyStats\n' + 
-            'Owner: Okkervill\n' + 
-            'Usage:\n   ' + 
-            '!vrank < username > gets Voobly ratings for a given user\n   ' + 
-            '!srank < username > gets Steam ratings for a given users Steam Vanity URL. This requires a public profile\n   ' +
-            '!srankid < profileID > gets Steam ratings for a given users Steam Profile ID. This requires a public profile\n   ' +
-            '!comp <user1> <user2> compare Voobly ratings of two given players'
+    output = 'Name: VooblyStats\n' +
+        'Owner: Okkervill\n' +
+        'Usage:\n   ' +
+        '!voobly <username> gets Voobly ratings for a given user\n   ' +
+        '!steam <username> gets Steam ratings for a given users Steam Vanity URL.\n   ' +
+        '!steamid <profileID> gets Steam ratings for a given users Steam Profile ID.\n   ' +
+        '!compare <user1> <user2> compare Voobly ratings of two given players\n\n' +
+        'To get any information from steam users need to have your Profile and Game Details set to public\n' +
+        'Profile > Edit Profile > My Privacy Settings > "My Profile: Public" > "Game Details: Public"'
     message.channel.send(output)
 }
