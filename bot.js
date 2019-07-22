@@ -143,9 +143,13 @@ function comparePlayers(message) {
 }
 
 function buildCompareOutput(rating1v11, rating1v12, ratingTG1, ratingTG2) {
-    output = player1 + '  |  ' + player2 + '\n1v1: ' + rating1v11 + '  |  ' + rating1v12 + '\nTG: ' + ratingTG1 + '  |  ' + ratingTG2
-    console.log(output)
-    return output
+    const compareOutput = new Discord.RichEmbed()
+        .setColor('#0099ff')
+        .setTitle('AoE Ratings: ' + player1 + ' | ' + player2)
+        .addField('1v1 Ratings', rating1v11 + ' | ' + rating1v12, false)
+        .addField('Team Game Rating', ratingTG1 + ' | ' + ratingTG2, false)
+        .setTimestamp()
+    return compareOutput
 }
 
 function getVooblyInfo(message) {
@@ -281,7 +285,6 @@ function getSteamInfo(message) {
     var dmgames;
     var rmrating;
     var dmrating;
-    var steamoutput;
 
     user = message.content.split(' ')[1]
 
@@ -292,14 +295,20 @@ function getSteamInfo(message) {
         .then(function (result) {
             var initializePromiseSteamStats = getHDStats(steamid)
             return initializePromiseSteamStats.then(function (result) {
+                console.log(result)
                 dmrating = result[0]
                 rmrating = result[1]
                 dmgames = result[2]
                 rmgames = result[3]
-                steamoutput = user + '\n' + 'RM: ' + rmrating + ' (' + rmgames + ')' + '\nDM: ' + dmrating + ' (' + dmgames + ')'
             })
         })
         .then(() => {
+            const steamoutput = new Discord.RichEmbed()
+                .setColor('#0099ff')
+                .setTitle('AoE Ratings: ' + user)
+                .addField('RM Rating', rmrating + '(' + rmgames + ')', true)
+                .addField('DM Rating', dmrating + '(' + dmgames + ')', true)
+                .setTimestamp()
             message.channel.send(steamoutput)
             console.log(steamoutput)
         })
@@ -314,7 +323,6 @@ function getSteamInfoID(message) {
     var dmgames;
     var rmrating;
     var dmrating;
-    var steamoutput;
 
     steamid = message.content.split(' ')[1]
 
@@ -335,11 +343,18 @@ function getSteamInfoID(message) {
                 rmrating = result[1]
                 dmgames = result[2]
                 rmgames = result[3]
-                steamoutput = user + '\n' + 'RM: ' + rmrating + ' (' + rmgames + ')' + '\nDM: ' + dmrating + ' (' + dmgames + ')'
+
+
             })
         })
         .then(() => {
-            message.channel.send(steamoutput)
+            const steamoutputid = new Discord.RichEmbed()
+                .setColor('#0099ff')
+                .setTitle('AoE Ratings: ' + user)
+                .addField('RM Rating', rmrating + '(' + rmgames + ')', true)
+                .addField('DM Rating', dmrating + '(' + dmgames + ')', true)
+                .setTimestamp()
+            message.channel.send(steamoutputid)
             console.log(steamoutput)
             return Promise.resolve()
         })
@@ -430,8 +445,24 @@ function getHDStats(steamid) {
 
 function getOnlinePlayers(message) {
     var getTeam = getTeamDetails()
+    var peoples = '';
     getTeam.then(function (result) {
-        message.channel.send(result)
+        if (result.length === 0){
+            message.channel.send('No online players')
+            return
+        }
+        const onlinePlayers = new Discord.RichEmbed()
+            .setColor('#0099ff')
+        for(i = 0; i<result.length; i++){
+            if(i < result.length -1){
+                peoples += result[i] + ', '
+            } else {
+                peoples += result[i]
+            }
+        }
+        onlinePlayers.addField('Online players', peoples, true)
+        onlinePlayers.setTimestamp()
+        message.channel.send(onlinePlayers)
     })
 }
 
@@ -471,21 +502,28 @@ function getTeamDetails() {
 }
 
 function buildOutput(user, rating1v1, ratingTG) {
-    output = user + '\n' + '1v1: ' + rating1v1 + '\n' + 'TG: ' + ratingTG
-    console.log(output)
-    return output
+    const embedOutput = new Discord.RichEmbed()
+        .setColor('#0099ff')
+        .setTitle('AoE Ratings: ' + user)
+        .addField('1v1 Rating', rating1v1, true)
+        .addField('Team Game Rating', ratingTG, true)
+        .setTimestamp()
+    return embedOutput
 }
 
 function displayInfo(message) {
-    output = 'Name: VooblyStats\n' +
-        'Owner: Okkervill\n' +
-        'Usage:\n   ' +
-        '!voobly <username> gets Voobly ratings for a given user\n   ' +
-        '!steam <username> gets Steam ratings for a given users Steam Vanity URL.\n   ' +
-        '!steamid <profileID> gets Steam ratings for a given users Steam Profile ID.\n   ' +
-        '!compare <user1> <user2> compare Voobly ratings of two given players\n   ' +
-        '!online get online users from Anvil Clan\n\n' +
-        'To get any information from steam users need to have your Profile and Game Details set to public\n' +
-        'Profile > Edit Profile > My Privacy Settings > "My Profile: Public" > "Game Details: Public"'
-    message.channel.send(output)
+    const infoEmbed = new Discord.RichEmbed()
+        .setColor('#0099ff')
+        .setTitle('AoE Info Bot')
+        .setDescription('This bot accesses both Voobly and Steam to get ratings for a given user')
+        .addField('!voobly <username>', 'This will get the Voobly 1v1 and Team Game ratings for a given user', true)
+        .addField('!compare <username> <username>', 'This will compare the Voobly 1v1 and Team Game ratings for two given users', true)
+        .addField('!steam <username>', 'This will get the Steam RM and DM ratings for a given steam user', true)
+        .addField('!steamid <username>', 'This will get the Steam RM and DM ratings for a given steam user id', true)
+        .addField('!online', 'This will get all the players in the Anvil clan currently online on Voobly', true)
+        .addBlankField()
+        .addField('Steam Requirement', 'To get any information from steam users need to have your Profile and Game Details set to public\nProfile > Edit Profile > My Privacy Settings > "My Profile: Public" > "Game Details: Public"', true)
+        .setTimestamp()
+        .setFooter('Created by Okkervill');
+    message.channel.send(infoEmbed)
 }
