@@ -55,6 +55,9 @@ dclient.on('message', message => {
         case '!info':
             displayInfo(message)
             break
+        case '!help':
+            displayHelp(message)
+            break
         default:
             break
     }
@@ -447,14 +450,14 @@ function getOnlinePlayers(message) {
     var getTeam = getTeamDetails()
     var peoples = '';
     getTeam.then(function (result) {
-        if (result.length === 0){
+        if (result.length === 0) {
             message.channel.send('No online players')
             return
         }
         const onlinePlayers = new Discord.RichEmbed()
             .setColor('#0099ff')
-        for(i = 0; i<result.length; i++){
-            if(i < result.length -1){
+        for (i = 0; i < result.length; i++) {
+            if (i < result.length - 1) {
                 peoples += result[i] + ', '
             } else {
                 peoples += result[i]
@@ -515,6 +518,16 @@ function displayInfo(message) {
     const infoEmbed = new Discord.RichEmbed()
         .setColor('#0099ff')
         .setTitle('AoE Info Bot')
+        .setDescription('This bot accesses both Voobly and Steam to get ratings for a given user. Type !help for a list of commands')
+        .setTimestamp()
+        .setFooter('Created by Okkervill');
+    message.channel.send(infoEmbed)
+}
+
+function displayHelp(message) {
+    const infoEmbed = new Discord.RichEmbed()
+        .setColor('#0099ff')
+        .setTitle('AoE Info Bot')
         .setDescription('This bot accesses both Voobly and Steam to get ratings for a given user')
         .addField('!voobly <username>', 'This will get the Voobly 1v1 and Team Game ratings for a given user', true)
         .addField('!compare <username> <username>', 'This will compare the Voobly 1v1 and Team Game ratings for two given users', true)
@@ -525,5 +538,6 @@ function displayInfo(message) {
         .addField('Steam Requirement', 'To get any information from steam users need to have your Profile and Game Details set to public\nProfile > Edit Profile > My Privacy Settings > "My Profile: Public" > "Game Details: Public"', true)
         .setTimestamp()
         .setFooter('Created by Okkervill');
-    message.channel.send(infoEmbed)
+    message.author.send(infoEmbed)
+
 }
